@@ -1,0 +1,22 @@
+# Electron / React
+node_modules/
+out/
+dist/
+dist-electron/
+dist-renderer/
+
+# Bundled Binaries (Keep repo size small)
+resources/yt-dlp.exe
+resources/ffmpeg.exe
+resources/ffmpeg.zip
+
+# IDEs & System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+.gemini/
+scratch/
+*.png
+*.ico

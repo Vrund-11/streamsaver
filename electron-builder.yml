@@ -1,0 +1,41 @@
+appId: com.streamsaverhd.app
+productName: StreamSaver HD
+copyright: "Copyright © 2024 StreamSaver HD"
+
+directories:
+  output: dist
+  buildResources: assets
+
+files:
+  - out/**/*
+
+extraResources:
+  - from: resources/
+    to: resources/
+    filter:
+      - "**/*"
+
+win:
+  sign: false
+  forceCodeSigning: false
+  target:
+    - target: portable
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+
+portable:
+  artifactName: StreamSaverHD-${version}-portable.exe
+
+appx:
+  applicationId: StreamSaverHD
+  backgroundColor: "#0d0d1a"
+  displayName: StreamSaver HD
+  identityName: StreamSaverHD
+  publisher: "CN=StreamSaverHD"
+  publisherDisplayName: StreamSaver HD
+  languages:
+    - en-US
+    - en-IN

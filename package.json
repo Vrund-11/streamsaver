@@ -1,0 +1,89 @@
+{
+  "name": "streamsaver-hd",
+  "version": "1.0.0",
+  "description": "StreamSaver HD — Universal Video Downloader for Windows",
+  "main": "out/main/index.js",
+  "author": {
+    "name": "StreamSaver HD"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build && electron-builder",
+    "build:exe": "electron-vite build && electron-builder --win portable",
+    "build:zip": "electron-vite build && electron-builder --win zip",
+    "build:msix": "electron-vite build && electron-builder --win appx",
+    "preview": "electron-vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@jimp/plugin-resize": "^1.6.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "jimp": "^1.6.1",
+    "vite": "^5.4.2"
+  },
+  "build": {
+    "appId": "com.streamsaverhd.app",
+    "productName": "StreamSaver HD",
+    "copyright": "Copyright © 2024 StreamSaver HD",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/",
+        "to": "resources/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "StreamSaver HD"
+    },
+    "appx": {
+      "applicationId": "StreamSaverHD",
+      "backgroundColor": "#0d0d1a",
+      "displayName": "StreamSaver HD",
+      "identityName": "StreamSaverHD",
+      "publisher": "CN=StreamSaverHD",
+      "publisherDisplayName": "StreamSaver HD",
+      "languages": [
+        "en-US"
+      ]
+    }
+  }
+}
