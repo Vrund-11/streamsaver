@@ -8,7 +8,6 @@ import DownloadHistory from './components/DownloadHistory'
 import Onboarding from './components/Onboarding'
 import RatingPopup from './components/RatingPopup'
 import PrivacyPolicy from './components/PrivacyPolicy'
-import ExplorePage from './components/ExplorePage'
 
 // ── Rate-limit helpers ──
 function getTodayKey() {
@@ -40,7 +39,7 @@ export default function App() {
   const [progress, setProgress]          = useState(null)
   const [history, setHistory]            = useState([])
   const [showGate, setShowGate]          = useState(false)
-  const [activeTab, setActiveTab]        = useState('home') // home | explore | history
+  const [activeTab, setActiveTab]        = useState('home') // home | history
   const [errorMsg, setErrorMsg]          = useState('')
   const [downloadsFolder, setDownloadsFolder] = useState('')
 
@@ -50,11 +49,15 @@ export default function App() {
   const [showPrivacy, setShowPrivacy]       = useState(false)
   const [pastedUrl, setPastedUrl]           = useState('')
 
+  // Sequence state: true if we are running the onboarding -> paywall -> rating sequence on first launch
+  const [isInitialSequence, setIsInitialSequence] = useState(false)
+
   // Check if onboarding needed on mount
   useEffect(() => {
     const done = localStorage.getItem('ss_onboarding_done')
     if (!done) {
       setShowOnboarding(true)
+      setIsInitialSequence(true)
     }
   }, [])
 
@@ -124,7 +127,7 @@ export default function App() {
   }
 
   async function handleDownload(url, quality, format) {
-    // ── Rate limiting check (free users) ──
+    // Rate limiting check (free users)
     if (!license.isPro) {
       const todayCount = getTodayDownloads()
       if (todayCount >= FREE_DAILY_LIMIT) {
@@ -176,7 +179,7 @@ export default function App() {
           setDownloadState('done')
           setProgress(null)
 
-          // Show rating popup on odd downloads (1st, 3rd, 5th...)
+          // Show rating popup on odd downloads (1st, 3rd, 5th...) for free users if they haven't rated
           const hasRated = localStorage.getItem('ss_user_rated')
           if (!hasRated && newTotalCount % 2 === 1) {
             setTimeout(() => setShowRating(true), 1000)
@@ -246,14 +249,6 @@ export default function App() {
     setProgress(null)
   }
 
-  // When user copies URL from Explore, switch to Download tab with that URL
-  function handleExploreUrlCopy(url) {
-    setPastedUrl(url)
-    setActiveTab('home')
-    setDownloadState('idle')
-    setVideoInfo(null)
-  }
-
   // Rate limit info for UI
   const dailyRemaining = license.isPro ? '∞' : Math.max(0, FREE_DAILY_LIMIT - getTodayDownloads())
 
@@ -261,7 +256,10 @@ export default function App() {
     <div className="app-shell">
       {/* Onboarding overlay */}
       {showOnboarding && (
-        <Onboarding onComplete={() => setShowOnboarding(false)} />
+        <Onboarding onComplete={() => {
+          setShowOnboarding(false)
+          setShowGate(true) // Trigger Paywall directly after onboarding
+        }} />
       )}
 
       <TitleBar isPro={license.isPro} />
@@ -280,12 +278,6 @@ export default function App() {
               onClick={() => setActiveTab('home')}
             >
               <span className="nav-icon">⬇</span> Download
-            </button>
-            <button
-              className={`nav-btn ${activeTab === 'explore' ? 'active' : ''}`}
-              onClick={() => setActiveTab('explore')}
-            >
-              <span className="nav-icon">🔍</span> Explore
             </button>
             <button
               className={`nav-btn ${activeTab === 'history' ? 'active' : ''}`}
@@ -331,7 +323,7 @@ export default function App() {
         </aside>
 
         {/* Main Content */}
-        <main className={`content ${activeTab === 'explore' ? 'explore-active' : ''}`}>
+        <main className="content">
           {activeTab === 'home' && (
             <>
               {(downloadState === 'idle' || downloadState === 'fetching' || downloadState === 'error') && (
@@ -386,10 +378,6 @@ export default function App() {
             </>
           )}
 
-          {activeTab === 'explore' && (
-            <ExplorePage onCopyUrl={handleExploreUrlCopy} />
-          )}
-
           {activeTab === 'history' && (
             <DownloadHistory history={history} />
           )}
@@ -399,7 +387,13 @@ export default function App() {
       {/* Modals */}
       {showGate && (
         <SubscriptionGate
-          onClose={() => setShowGate(false)}
+          onClose={() => {
+            setShowGate(false)
+            if (isInitialSequence) {
+              setIsInitialSequence(false)
+              setShowRating(true) // Trigger Rate popup directly after Paywall is closed
+            }
+          }}
           onPurchase={() => {
             setShowGate(false)
             if (window.electronAPI) {
@@ -407,6 +401,10 @@ export default function App() {
             } else {
               // Mock: simulate pro purchase in browser
               setLicense({ isPro: true, plan: 'monthly', source: 'browser-mock' })
+            }
+            if (isInitialSequence) {
+              setIsInitialSequence(false)
+              setShowRating(true) // Trigger Rate popup directly after Paywall is purchased
             }
           }}
         />
