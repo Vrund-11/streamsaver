@@ -5,6 +5,33 @@ import VideoCard from './components/VideoCard'
 import ProgressBar from './components/ProgressBar'
 import SubscriptionGate from './components/SubscriptionGate'
 import DownloadHistory from './components/DownloadHistory'
+import Onboarding from './components/Onboarding'
+import RatingPopup from './components/RatingPopup'
+import PrivacyPolicy from './components/PrivacyPolicy'
+import ExplorePage from './components/ExplorePage'
+
+// ── Rate-limit helpers ──
+function getTodayKey() {
+  return `ss_dl_count_${new Date().toISOString().slice(0, 10)}`
+}
+function getTodayDownloads() {
+  return parseInt(localStorage.getItem(getTodayKey()) || '0', 10)
+}
+function incrementTodayDownloads() {
+  const count = getTodayDownloads() + 1
+  localStorage.setItem(getTodayKey(), String(count))
+  return count
+}
+function getTotalDownloads() {
+  return parseInt(localStorage.getItem('ss_total_downloads') || '0', 10)
+}
+function incrementTotalDownloads() {
+  const count = getTotalDownloads() + 1
+  localStorage.setItem('ss_total_downloads', String(count))
+  return count
+}
+
+const FREE_DAILY_LIMIT = 1
 
 export default function App() {
   const [license, setLicense]           = useState({ isPro: false })
@@ -13,9 +40,23 @@ export default function App() {
   const [progress, setProgress]          = useState(null)
   const [history, setHistory]            = useState([])
   const [showGate, setShowGate]          = useState(false)
-  const [activeTab, setActiveTab]        = useState('home') // home | history
+  const [activeTab, setActiveTab]        = useState('home') // home | explore | history
   const [errorMsg, setErrorMsg]          = useState('')
   const [downloadsFolder, setDownloadsFolder] = useState('')
+
+  // New state for added features
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showRating, setShowRating]         = useState(false)
+  const [showPrivacy, setShowPrivacy]       = useState(false)
+  const [pastedUrl, setPastedUrl]           = useState('')
+
+  // Check if onboarding needed on mount
+  useEffect(() => {
+    const done = localStorage.getItem('ss_onboarding_done')
+    if (!done) {
+      setShowOnboarding(true)
+    }
+  }, [])
 
   async function handleChangeFolder() {
     if (window.electronAPI) {
@@ -31,7 +72,8 @@ export default function App() {
     if (window.electronAPI) {
       window.electronAPI.checkLicense().then(setLicense)
     } else {
-      setLicense({ isPro: true, plan: 'monthly', source: 'browser' })
+      // Browser mock: free user for testing rate-limit UI
+      setLicense({ isPro: false, plan: 'free', source: 'browser' })
     }
   }, [])
 
@@ -82,7 +124,16 @@ export default function App() {
   }
 
   async function handleDownload(url, quality, format) {
-    // Check if pro is needed
+    // ── Rate limiting check (free users) ──
+    if (!license.isPro) {
+      const todayCount = getTodayDownloads()
+      if (todayCount >= FREE_DAILY_LIMIT) {
+        setShowGate(true)
+        return
+      }
+    }
+
+    // Check if pro quality is needed
     const proQualities = ['1080p', '1080p60', '4K', '2160p', 'mp3']
     if (proQualities.includes(quality) && !license.isPro) {
       setShowGate(true)
@@ -110,8 +161,26 @@ export default function App() {
         setProgress({ percent: pct, speed: '2.8 MB/s', eta: `${Math.round((100 - pct) / 10)}s`, totalSize: '15.4 MB' })
         if (pct >= 100) {
           clearInterval(interval)
+          // Increment counters
+          const newDailyCount = incrementTodayDownloads()
+          const newTotalCount = incrementTotalDownloads()
+
+          // Add to history
+          setHistory(prev => [{
+            title: videoInfo?.title || url,
+            quality,
+            format,
+            date: new Date().toLocaleString()
+          }, ...prev].slice(0, 50))
+
           setDownloadState('done')
           setProgress(null)
+
+          // Show rating popup on odd downloads (1st, 3rd, 5th...)
+          const hasRated = localStorage.getItem('ss_user_rated')
+          if (!hasRated && newTotalCount % 2 === 1) {
+            setTimeout(() => setShowRating(true), 1000)
+          }
         }
       }, 300)
       window._mockCancel = () => {
@@ -138,6 +207,10 @@ export default function App() {
       return
     }
 
+    // Increment counters
+    const newDailyCount = incrementTodayDownloads()
+    const newTotalCount = incrementTotalDownloads()
+
     // Add to history
     setHistory(prev => [{
       title: videoInfo?.title || url,
@@ -148,6 +221,12 @@ export default function App() {
 
     setDownloadState('done')
     setProgress(null)
+
+    // Show rating popup on odd downloads (1st, 3rd, 5th...)
+    const hasRated = localStorage.getItem('ss_user_rated')
+    if (!hasRated && newTotalCount % 2 === 1) {
+      setTimeout(() => setShowRating(true), 1000)
+    }
   }
 
   function handleReset() {
@@ -167,8 +246,24 @@ export default function App() {
     setProgress(null)
   }
 
+  // When user copies URL from Explore, switch to Download tab with that URL
+  function handleExploreUrlCopy(url) {
+    setPastedUrl(url)
+    setActiveTab('home')
+    setDownloadState('idle')
+    setVideoInfo(null)
+  }
+
+  // Rate limit info for UI
+  const dailyRemaining = license.isPro ? '∞' : Math.max(0, FREE_DAILY_LIMIT - getTodayDownloads())
+
   return (
     <div className="app-shell">
+      {/* Onboarding overlay */}
+      {showOnboarding && (
+        <Onboarding onComplete={() => setShowOnboarding(false)} />
+      )}
+
       <TitleBar isPro={license.isPro} />
 
       <div className="app-body">
@@ -187,14 +282,44 @@ export default function App() {
               <span className="nav-icon">⬇</span> Download
             </button>
             <button
+              className={`nav-btn ${activeTab === 'explore' ? 'active' : ''}`}
+              onClick={() => setActiveTab('explore')}
+            >
+              <span className="nav-icon">🔍</span> Explore
+            </button>
+            <button
               className={`nav-btn ${activeTab === 'history' ? 'active' : ''}`}
               onClick={() => setActiveTab('history')}
             >
               <span className="nav-icon">🕐</span> History
             </button>
+
+            <div className="nav-divider"></div>
+
+            <button className="nav-btn nav-btn-small" onClick={() => setShowPrivacy(true)}>
+              <span className="nav-icon">🔒</span> Privacy Policy
+            </button>
+            <button className="nav-btn nav-btn-small" onClick={() => setShowRating(true)}>
+              <span className="nav-icon">⭐</span> Rate Us
+            </button>
+            <button className="nav-btn nav-btn-small" onClick={() => {
+              if (window.electronAPI?.openExternal) {
+                window.electronAPI.openExternal('https://www.microsoft.com/store/')
+              } else {
+                alert('StreamSaver HD v1.0.0\n\nMade with ❤️')
+              }
+            }}>
+              <span className="nav-icon">ℹ️</span> About
+            </button>
           </nav>
 
           <div className="sidebar-footer">
+            {/* Daily limit badge */}
+            <div className="daily-limit-badge">
+              <span className="limit-label">Downloads today</span>
+              <span className="limit-value">{getTodayDownloads()} / {license.isPro ? '∞' : FREE_DAILY_LIMIT}</span>
+            </div>
+
             {license.isPro ? (
               <div className="badge-pro">✦ PRO Active</div>
             ) : (
@@ -206,7 +331,7 @@ export default function App() {
         </aside>
 
         {/* Main Content */}
-        <main className="content">
+        <main className={`content ${activeTab === 'explore' ? 'explore-active' : ''}`}>
           {activeTab === 'home' && (
             <>
               {(downloadState === 'idle' || downloadState === 'fetching' || downloadState === 'error') && (
@@ -214,6 +339,7 @@ export default function App() {
                   onSubmit={handleFetchInfo}
                   isLoading={downloadState === 'fetching'}
                   error={errorMsg}
+                  prefillUrl={pastedUrl}
                 />
               )}
 
@@ -260,13 +386,17 @@ export default function App() {
             </>
           )}
 
+          {activeTab === 'explore' && (
+            <ExplorePage onCopyUrl={handleExploreUrlCopy} />
+          )}
+
           {activeTab === 'history' && (
             <DownloadHistory history={history} />
           )}
         </main>
       </div>
 
-      {/* Subscription Gate Modal */}
+      {/* Modals */}
       {showGate && (
         <SubscriptionGate
           onClose={() => setShowGate(false)}
@@ -274,9 +404,23 @@ export default function App() {
             setShowGate(false)
             if (window.electronAPI) {
               window.electronAPI.checkLicense().then(setLicense)
+            } else {
+              // Mock: simulate pro purchase in browser
+              setLicense({ isPro: true, plan: 'monthly', source: 'browser-mock' })
             }
           }}
         />
+      )}
+
+      {showRating && (
+        <RatingPopup
+          onClose={() => setShowRating(false)}
+          onRate={(rating) => console.log('User rated:', rating)}
+        />
+      )}
+
+      {showPrivacy && (
+        <PrivacyPolicy onClose={() => setShowPrivacy(false)} />
       )}
     </div>
   )

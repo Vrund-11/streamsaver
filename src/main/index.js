@@ -18,7 +18,8 @@ function createWindow() {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: false,
+      webviewTag: true
     },
     icon: join(__dirname, '../../assets/icon.ico'),
     show: false

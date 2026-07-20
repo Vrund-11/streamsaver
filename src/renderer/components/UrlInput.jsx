@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 
-export default function UrlInput({ onSubmit, isLoading, error }) {
+export default function UrlInput({ onSubmit, isLoading, error, prefillUrl }) {
   const [url, setUrl] = useState('')
   const inputRef = useRef(null)
 
@@ -8,6 +8,13 @@ export default function UrlInput({ onSubmit, isLoading, error }) {
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
+
+  // Fill URL from Explore tab copy
+  useEffect(() => {
+    if (prefillUrl) {
+      setUrl(prefillUrl)
+    }
+  }, [prefillUrl])
 
   // Auto-paste from clipboard on Ctrl+V anywhere on the page
   useEffect(() => {
