@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 export default function ExplorePage({ onCopyUrl }) {
   const isElectron = !!window.electronAPI
   const [currentUrl, setCurrentUrl] = useState('https://www.youtube.com')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [inputValue, setInputValue] = useState('https://www.youtube.com')
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
@@ -25,6 +25,7 @@ export default function ExplorePage({ onCopyUrl }) {
     const handleNavigate = () => {
       const url = webview.getURL()
       setCurrentUrl(url)
+      setInputValue(url) // Sync address bar with loaded page
       setCanGoBack(webview.canGoBack())
       setCanGoForward(webview.canGoForward())
     }
@@ -45,27 +46,41 @@ export default function ExplorePage({ onCopyUrl }) {
     }
   }, [isElectron])
 
+  // Helper to check if string looks like a URL
+  function isUrl(str) {
+    const clean = str.trim()
+    if (clean.startsWith('http://') || clean.startsWith('https://')) return true
+    if (
+      clean.startsWith('youtube.com') || 
+      clean.startsWith('www.youtube.com') || 
+      clean.startsWith('youtu.be') || 
+      clean.startsWith('m.youtube.com')
+    ) return true
+    
+    // Domain check (has dot, no spaces)
+    if (clean.includes('.') && !clean.includes(' ')) return true
+    return false
+  }
+
   // Fetch search suggestions
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    const query = inputValue.trim()
+    if (!query || isUrl(query)) {
       setSuggestions([])
       return
     }
 
     const delayDebounce = setTimeout(async () => {
       try {
-        // Fetch YouTube search autocomplete suggestions
-        const res = await fetch(`https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(searchQuery)}`)
+        const res = await fetch(`https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(query)}`)
         const text = await res.text()
         
-        // Extract array from window.google.ac.h(...) callback format
         const match = text.match(/window\.google\.ac\.h\((.*)\)/)
         if (match && match[1]) {
           const data = JSON.parse(match[1])
           const queries = data[1].map(item => item[0])
           setSuggestions(queries.slice(0, 6))
         } else {
-          // Alternative fallback parsing if format differs
           const cleanText = text.replace('window.google.ac.h(', '').replace(')', '')
           const data = JSON.parse(cleanText)
           const queries = data[1].map(item => item[0])
@@ -73,21 +88,21 @@ export default function ExplorePage({ onCopyUrl }) {
         }
       } catch (err) {
         console.error('Failed to fetch suggestions:', err)
-        // Fallback suggestions
+        // Fallback static suggestions
         const staticSuggestions = [
-          searchQuery,
-          `${searchQuery} music`,
-          `${searchQuery} live`,
-          `${searchQuery} mix`,
-          `${searchQuery} official video`,
-          `${searchQuery} lofi`
+          query,
+          `${query} music`,
+          `${query} live`,
+          `${query} mix`,
+          `${query} official video`,
+          `${query} lofi`
         ]
         setSuggestions(staticSuggestions)
       }
     }, 250)
 
     return () => clearTimeout(delayDebounce)
-  }, [searchQuery])
+  }, [inputValue])
 
   // Handle outside click to hide suggestions
   useEffect(() => {
@@ -119,24 +134,38 @@ export default function ExplorePage({ onCopyUrl }) {
   }
 
   function handleGoHome() {
+    const homeUrl = 'https://www.youtube.com'
     if (webviewRef.current) {
-      webviewRef.current.loadURL('https://www.youtube.com')
+      webviewRef.current.loadURL(homeUrl)
     } else {
-      setCurrentUrl('https://www.youtube.com')
+      setCurrentUrl(homeUrl)
+      setInputValue(homeUrl)
     }
   }
 
   function handleSearchSubmit(queryText) {
-    const query = queryText || searchQuery
-    if (!query.trim()) return
+    const input = (queryText || inputValue).trim()
+    if (!input) return
 
     setShowSuggestions(false)
-    const targetUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
+    let targetUrl = ''
+
+    if (isUrl(input)) {
+      // Ensure protocol is present
+      targetUrl = input
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = 'https://' + targetUrl
+      }
+    } else {
+      // Treat as YouTube search query
+      targetUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(input)}`
+    }
 
     if (webviewRef.current) {
       webviewRef.current.loadURL(targetUrl)
     } else {
       setCurrentUrl(targetUrl)
+      setInputValue(targetUrl)
     }
   }
 
@@ -181,8 +210,9 @@ export default function ExplorePage({ onCopyUrl }) {
             className="toolbar-btn" 
             onClick={handleReload} 
             title="Refresh"
+            disabled={isLoading}
           >
-            ⟳
+            {isLoading ? '...' : '⟳'}
           </button>
           <button 
             className="toolbar-btn" 
@@ -193,7 +223,7 @@ export default function ExplorePage({ onCopyUrl }) {
           </button>
         </div>
 
-        {/* Search & Suggestions Form */}
+        {/* Address & Search Input */}
         <div className="toolbar-search-wrap">
           <form 
             className="toolbar-search-form" 
@@ -203,12 +233,16 @@ export default function ExplorePage({ onCopyUrl }) {
               ref={searchInputRef}
               type="text"
               className="toolbar-search-input"
-              placeholder="Search YouTube..."
-              value={searchQuery}
-              onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true) }}
-              onFocus={() => setShowSuggestions(true)}
+              placeholder="Search YouTube or paste video URL..."
+              value={inputValue}
+              onChange={e => { setInputValue(e.target.value); setShowSuggestions(true) }}
+              onFocus={(e) => {
+                setShowSuggestions(true)
+                // Select all text on focus for quick replacing / editing
+                e.target.select()
+              }}
             />
-            <button type="submit" className="toolbar-search-btn">🔍</button>
+            <button type="submit" className="toolbar-search-btn">Go</button>
           </form>
 
           {/* Autocomplete Suggestions Dropdown */}
@@ -219,7 +253,7 @@ export default function ExplorePage({ onCopyUrl }) {
                   key={index}
                   className="suggestion-item"
                   onClick={() => {
-                    setSearchQuery(suggestion)
+                    setInputValue(suggestion)
                     handleSearchSubmit(suggestion)
                   }}
                 >
@@ -238,7 +272,7 @@ export default function ExplorePage({ onCopyUrl }) {
           onClick={handleDownloadCurrent}
           title={isWatchUrl(currentUrl) ? "Click to download this video!" : "Play a video first to download"}
         >
-          {copied ? '✓ Loading Video...' : '⬇ Download Video'}
+          {copied ? '✓ Fetching...' : '⬇ Download Video'}
         </button>
       </div>
 
@@ -248,6 +282,7 @@ export default function ExplorePage({ onCopyUrl }) {
           <webview
             ref={webviewRef}
             src="https://www.youtube.com"
+            useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             className="explore-webview"
             style={{ width: '100%', height: '100%', border: 'none' }}
           />
@@ -267,7 +302,9 @@ export default function ExplorePage({ onCopyUrl }) {
                 <button 
                   className="btn-primary" 
                   onClick={() => {
-                    setCurrentUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+                    const rickUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                    setCurrentUrl(rickUrl)
+                    setInputValue(rickUrl)
                   }}
                 >
                   Simulate Playing Rick Astley
@@ -275,7 +312,9 @@ export default function ExplorePage({ onCopyUrl }) {
                 <button 
                   className="btn-secondary"
                   onClick={() => {
-                    setCurrentUrl('https://www.youtube.com/watch?v=jNQXAC9IVRw')
+                    const zooUrl = 'https://www.youtube.com/watch?v=jNQXAC9IVRw'
+                    setCurrentUrl(zooUrl)
+                    setInputValue(zooUrl)
                   }}
                 >
                   Simulate Playing Me at the zoo
