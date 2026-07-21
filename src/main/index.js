@@ -25,11 +25,11 @@ function createWindow() {
     show: false
   })
 
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173')
+  if (process.env.NODE_ENV === 'development' || process.env.VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173')
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
-    mainWindow.loadFile(join(__dirname, '../../dist-renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -136,4 +136,11 @@ ipcMain.handle('license:check', async () => {
 // Open folder in Explorer
 ipcMain.on('shell:openFolder', (_, folderPath) => {
   shell.openPath(folderPath)
+})
+
+// Open external URL in browser
+ipcMain.on('shell:openExternal', (_, url) => {
+  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+    shell.openExternal(url)
+  }
 })

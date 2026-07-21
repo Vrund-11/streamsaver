@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "electron-vite dev",
+    "start": "electron-vite dev",
     "build": "electron-vite build && electron-builder",
     "build:exe": "electron-vite build && electron-builder --win portable",
     "build:zip": "electron-vite build && electron-builder --win zip",

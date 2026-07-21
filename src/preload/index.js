@@ -35,5 +35,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openDownloadsFolder: (path) => ipcRenderer.send('shell:openFolder', path),
 
   // Select folder dialog
-  selectFolder: () => ipcRenderer.invoke('dialog:selectFolder')
+  selectFolder: () => ipcRenderer.invoke('dialog:selectFolder'),
+
+  // Open external URL in browser
+  openExternal: (url) => ipcRenderer.send('shell:openExternal', url)
 })
