@@ -9,9 +9,9 @@
  */
 
 export async function checkLicense() {
-  // Development mode — return PRO tier for testing
+  // Development mode — return Free tier for testing
   if (!process.windowsStore) {
-    return { isPro: true, plan: 'monthly', source: 'dev' }
+    return { isPro: false, plan: null, source: 'dev' }
   }
 
   try {

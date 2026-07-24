@@ -52,13 +52,11 @@ export default function App() {
   // Sequence state: true if we are running the onboarding -> paywall -> rating sequence on first launch
   const [isInitialSequence, setIsInitialSequence] = useState(false)
 
-  // Check if onboarding needed on mount
+  // Check if onboarding needed on mount (force trigger for testing)
   useEffect(() => {
-    const done = localStorage.getItem('ss_onboarding_done')
-    if (!done) {
-      setShowOnboarding(true)
-      setIsInitialSequence(true)
-    }
+    localStorage.removeItem('ss_onboarding_done')
+    setShowOnboarding(true)
+    setIsInitialSequence(true)
   }, [])
 
   async function handleChangeFolder() {
@@ -294,15 +292,6 @@ export default function App() {
             <button className="nav-btn nav-btn-small" onClick={() => setShowRating(true)}>
               <span className="nav-icon">⭐</span> Rate Us
             </button>
-            <button className="nav-btn nav-btn-small" onClick={() => {
-              if (window.electronAPI?.openExternal) {
-                window.electronAPI.openExternal('https://www.microsoft.com/store/')
-              } else {
-                alert('StreamSaver HD v1.0.0\n\nMade with ❤️')
-              }
-            }}>
-              <span className="nav-icon">ℹ️</span> About
-            </button>
           </nav>
 
           <div className="sidebar-footer">
@@ -396,12 +385,7 @@ export default function App() {
           }}
           onPurchase={() => {
             setShowGate(false)
-            if (window.electronAPI) {
-              window.electronAPI.checkLicense().then(setLicense)
-            } else {
-              // Mock: simulate pro purchase in browser
-              setLicense({ isPro: true, plan: 'monthly', source: 'browser-mock' })
-            }
+            setLicense({ isPro: true, plan: 'monthly', source: 'dev-purchase' })
             if (isInitialSequence) {
               setIsInitialSequence(false)
               setShowRating(true) // Trigger Rate popup directly after Paywall is purchased
