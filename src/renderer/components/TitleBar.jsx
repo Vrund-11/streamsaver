@@ -4,7 +4,9 @@ export default function TitleBar({ isPro }) {
   return (
     <div className="titlebar">
       <div className="titlebar-left">
-        <span className="titlebar-logo">▼ StreamSaver HD</span>
+        <span className="titlebar-logo">
+          <span className="brand-badge">↓</span> StreamSaver HD
+        </span>
         {isPro && <span className="titlebar-pro-badge">PRO</span>}
       </div>
       <div className="titlebar-controls">

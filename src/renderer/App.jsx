@@ -266,8 +266,8 @@ export default function App() {
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="logo-mark">
-            <span className="logo-icon">▼</span>
-            <span className="logo-text">StreamSaver<br /><strong>HD</strong></span>
+            <span className="brand-badge-large">↓</span>
+            <span className="logo-text">StreamSaver <strong>HD</strong></span>
           </div>
 
           <nav className="nav-links">
