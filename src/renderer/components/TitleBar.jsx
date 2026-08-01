@@ -1,11 +1,13 @@
 import React from 'react'
+import iconPng from '../assets/icon.png'
 
 export default function TitleBar({ isPro }) {
   return (
     <div className="titlebar">
       <div className="titlebar-left">
         <span className="titlebar-logo">
-          <span className="brand-badge">↓</span> YoTube Video Downloader
+          <img src={iconPng} alt="Logo" style={{ width: '20px', height: '20px', borderRadius: '4px', verticalAlign: 'middle', marginRight: '8px' }} />
+          YoTube Video Downloader
         </span>
         {isPro && <span className="titlebar-pro-badge">PRO</span>}
       </div>

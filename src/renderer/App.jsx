@@ -8,6 +8,7 @@ import DownloadHistory from './components/DownloadHistory'
 import Onboarding from './components/Onboarding'
 import RatingPopup from './components/RatingPopup'
 import PrivacyPolicy from './components/PrivacyPolicy'
+import iconPng from './assets/icon.png'
 
 // ── Rate-limit helpers ──
 function getTodayKey() {
@@ -266,7 +267,7 @@ export default function App() {
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="logo-mark">
-            <span className="brand-badge-large">↓</span>
+            <img src={iconPng} alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', marginRight: '10px', objectFit: 'cover' }} />
             <span className="logo-text">YoTube Video <strong>Downloader</strong></span>
           </div>
 

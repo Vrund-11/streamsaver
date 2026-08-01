@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import iconPng from '../assets/icon.png'
 
 export default function UrlInput({ onSubmit, isLoading, error, prefillUrl }) {
   const [url, setUrl] = useState('')
@@ -51,7 +52,9 @@ export default function UrlInput({ onSubmit, isLoading, error, prefillUrl }) {
   return (
     <div className="url-input-section">
       <div className="url-hero">
-        <div className="url-hero-icon">▼</div>
+        <div className="url-hero-icon" style={{ background: 'transparent', border: 'none', padding: 0 }}>
+          <img src={iconPng} alt="App Icon" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} />
+        </div>
         <h1 className="url-hero-title">Download Any Video</h1>
         <p className="url-hero-sub">
           Paste a video URL below. Supports YouTube, Instagram, Twitter, Facebook and 1000+ sites.
