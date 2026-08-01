@@ -68,7 +68,7 @@ export default function UrlInput({ onSubmit, isLoading, error, prefillUrl }) {
             value={url}
             onChange={e => setUrl(e.target.value)}
             onPaste={handlePaste}
-            placeholder="Paste your video URL here..."
+            placeholder="YouTube"
             disabled={isLoading}
             autoComplete="off"
             spellCheck="false"
