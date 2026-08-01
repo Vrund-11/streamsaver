@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron'
 import { join } from 'path'
 import { startDownload, fetchVideoInfo, cancelDownload } from './downloader'
-import { checkLicense } from './store-license'
+import { checkLicense, purchaseSubscription } from './store-license'
 
 let mainWindow = null
 
@@ -131,6 +131,11 @@ ipcMain.on('video:cancel', () => {
 // Check license / subscription
 ipcMain.handle('license:check', async () => {
   return await checkLicense()
+})
+
+// Trigger Store purchase
+ipcMain.handle('license:purchase', async (_, storeId) => {
+  return await purchaseSubscription(storeId)
 })
 
 // Open folder in Explorer

@@ -1,6 +1,6 @@
-appId: com.streamsaverhd.app
-productName: StreamSaver HD
-copyright: "Copyright © 2024 StreamSaver HD"
+appId: com.yotubevideodownloader.app
+productName: YoTube Video Downloader
+copyright: "Copyright © 2024 YoTube Video Downloader"
 
 directories:
   output: dist
@@ -27,15 +27,16 @@ win:
         - x64
 
 portable:
-  artifactName: StreamSaverHD-${version}-portable.exe
+  artifactName: YoTubeVideoDownloader-${version}-portable.exe
 
 appx:
-  applicationId: StreamSaverHD
+  artifactName: "YoTube Video Downloader ${version}.msix"
+  applicationId: YoTubeVideoDownloader
   backgroundColor: "#0d0d1a"
-  displayName: StreamSaver HD
-  identityName: StreamSaverHD
-  publisher: "CN=StreamSaverHD"
-  publisherDisplayName: StreamSaver HD
+  displayName: YoTube Video Downloader
+  identityName: MaxupApps.YoTubeVideoDownloader
+  publisher: "CN=D13CE171-94D0-4CF7-9DE0-84DB0B762915"
+  publisherDisplayName: MaxupApps
   languages:
     - en-US
     - en-IN

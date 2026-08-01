@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Check license / subscription status
   checkLicense: () => ipcRenderer.invoke('license:check'),
 
+  // Purchase subscription via Store
+  purchase: (storeId) => ipcRenderer.invoke('license:purchase', storeId),
+
   // Open Downloads folder in Windows Explorer
   openDownloadsFolder: (path) => ipcRenderer.send('shell:openFolder', path),
 

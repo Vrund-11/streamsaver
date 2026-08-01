@@ -1,10 +1,10 @@
 {
-  "name": "streamsaver-hd",
+  "name": "yotube-video-downloader",
   "version": "1.0.0",
-  "description": "StreamSaver HD — Universal Video Downloader for Windows",
+  "description": "YoTube Video Downloader — Universal Video Downloader for Windows",
   "main": "out/main/index.js",
   "author": {
-    "name": "StreamSaver HD"
+    "name": "MaxupApps"
   },
   "scripts": {
     "dev": "electron-vite dev",
@@ -29,9 +29,9 @@
     "vite": "^5.4.2"
   },
   "build": {
-    "appId": "com.streamsaverhd.app",
-    "productName": "StreamSaver HD",
-    "copyright": "Copyright © 2024 StreamSaver HD",
+    "appId": "com.yotubevideodownloader.app",
+    "productName": "YoTube Video Downloader",
+    "copyright": "Copyright © 2024 YoTube Video Downloader",
     "directories": {
       "output": "dist"
     },
@@ -73,15 +73,16 @@
       "installerHeaderIcon": "assets/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "StreamSaver HD"
+      "shortcutName": "YoTube Video Downloader"
     },
     "appx": {
-      "applicationId": "StreamSaverHD",
+      "artifactName": "YoTube Video Downloader ${version}.msix",
+      "applicationId": "YoTubeVideoDownloader",
       "backgroundColor": "#0d0d1a",
-      "displayName": "StreamSaver HD",
-      "identityName": "StreamSaverHD",
-      "publisher": "CN=StreamSaverHD",
-      "publisherDisplayName": "StreamSaver HD",
+      "displayName": "YoTube Video Downloader",
+      "identityName": "MaxupApps.YoTubeVideoDownloader",
+      "publisher": "CN=D13CE171-94D0-4CF7-9DE0-84DB0B762915",
+      "publisherDisplayName": "MaxupApps",
       "languages": [
         "en-US"
       ]

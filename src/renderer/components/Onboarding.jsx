@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 const slides = [
   {
     icon: '🎬',
-    title: 'Welcome to StreamSaver HD',
+    title: 'Welcome to YoTube Video Downloader',
     description: 'Download your favorite videos in stunning quality — from 720p all the way to 4K Ultra HD.',
     highlight: 'Free to use · No sign-up required'
   },

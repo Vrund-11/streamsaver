@@ -27,8 +27,8 @@ export async function checkLicense() {
       $storeContext = [Windows.Services.Store.StoreContext,Windows.Services.Store,ContentType=WindowsRuntime]::GetDefault()
       $appLicense = $storeContext.GetAppLicenseAsync() | Await-Task
       $addOns = $appLicense.AddOnLicenses
-      $proMonthly = $addOns['streamsaverhd_pro_monthly']
-      $proYearly  = $addOns['streamsaverhd_pro_yearly']
+      $proMonthly = $addOns['9P947CB5W067']
+      $proYearly  = $addOns['9N742Z07B04K']
       if ($proMonthly -and $proMonthly.IsActive) { Write-Output 'pro:monthly' }
       elseif ($proYearly -and $proYearly.IsActive) { Write-Output 'pro:yearly' }
       else { Write-Output 'free' }
@@ -51,10 +51,10 @@ export async function checkLicense() {
  * Trigger the Microsoft Store in-app purchase flow.
  * Opens a native Windows purchase dialog.
  */
-export async function purchaseSubscription(storeId) {
+export async function purchaseSubscription(storeId = 'streamsaverhd_pro_monthly') {
   if (!process.windowsStore) {
-    console.warn('[License] Not running as a Store app — cannot trigger purchase')
-    return { success: false, reason: 'not_store_app' }
+    console.warn('[License] Not running as a Store app — simulating successful dev purchase')
+    return { success: true, isPro: true, plan: 'dev_monthly', source: 'dev' }
   }
 
   try {
@@ -72,10 +72,11 @@ export async function purchaseSubscription(storeId) {
     const { stdout } = await execFileAsync('powershell', ['-NoProfile', '-Command', ps])
     const status = stdout.trim()
 
-    if (status === 'Succeeded') return { success: true }
+    if (status === 'Succeeded') return { success: true, isPro: true, plan: 'monthly', source: 'store' }
     return { success: false, reason: status }
 
   } catch (err) {
+    console.error('[License] Purchase error:', err)
     return { success: false, reason: err.message }
   }
 }

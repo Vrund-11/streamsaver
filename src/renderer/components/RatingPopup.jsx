@@ -1,4 +1,8 @@
 import React, { useState } from 'react'
+import { GOOGLE_FORM_FEEDBACK_URL } from './PrivacyPolicy'
+
+// Store ID for Microsoft Store Review protocol
+const MS_STORE_ID = '9PJ3FQ2TDKPN'
 
 export default function RatingPopup({ onClose, onRate }) {
   const [rating, setRating] = useState(0)
@@ -9,8 +13,27 @@ export default function RatingPopup({ onClose, onRate }) {
     localStorage.setItem('ss_user_rated', 'true')
     localStorage.setItem('ss_user_rating', String(rating))
     setSubmitted(true)
+
+    // Redirect based on rating score
+    if (rating >= 4) {
+      // 4 or 5 stars -> Open Microsoft Store Review page
+      const storeReviewUrl = `ms-windows-store://review/?ProductId=${MS_STORE_ID}`
+      if (window.electronAPI?.openExternal) {
+        window.electronAPI.openExternal(storeReviewUrl)
+      } else {
+        window.open(`https://apps.microsoft.com/detail/${MS_STORE_ID}`, '_blank')
+      }
+    } else if (rating > 0) {
+      // 1-3 stars -> Redirect to Feedback Google Form to address concerns privately
+      if (window.electronAPI?.openExternal) {
+        window.electronAPI.openExternal(GOOGLE_FORM_FEEDBACK_URL)
+      } else {
+        window.open(GOOGLE_FORM_FEEDBACK_URL, '_blank')
+      }
+    }
+
     setTimeout(() => {
-      onRate(rating)
+      if (onRate) onRate(rating)
       onClose()
     }, 1500)
   }
@@ -32,7 +55,7 @@ export default function RatingPopup({ onClose, onRate }) {
           <>
             <div className="rating-header">
               <div className="rating-emoji">⭐</div>
-              <h2 className="rating-title">Enjoying StreamSaver HD?</h2>
+              <h2 className="rating-title">Enjoying YoTube Video Downloader?</h2>
               <p className="rating-sub">Rate your experience to help us improve!</p>
             </div>
 

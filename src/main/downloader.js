@@ -63,7 +63,7 @@ export async function fetchVideoInfo(url) {
  */
 export async function startDownload({ url, format, quality, savePath }, onProgress) {
   return new Promise((resolve, reject) => {
-    const outputTemplate = savePath || join(os.homedir(), 'Downloads', 'StreamSaver HD', '%(title)s.%(ext)s')
+    const outputTemplate = savePath || join(os.homedir(), 'Downloads', 'YoTube Video Downloader', '%(title)s.%(ext)s')
     const downloadsDir = dirname(outputTemplate)
     if (!existsSync(downloadsDir)) mkdirSync(downloadsDir, { recursive: true })
 

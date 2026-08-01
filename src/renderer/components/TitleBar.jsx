@@ -5,7 +5,7 @@ export default function TitleBar({ isPro }) {
     <div className="titlebar">
       <div className="titlebar-left">
         <span className="titlebar-logo">
-          <span className="brand-badge">↓</span> StreamSaver HD
+          <span className="brand-badge">↓</span> YoTube Video Downloader
         </span>
         {isPro && <span className="titlebar-pro-badge">PRO</span>}
       </div>

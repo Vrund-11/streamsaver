@@ -1,13 +1,29 @@
-import React from 'react'
+import React, { useState } from 'react'
+
+const STORE_IDS = {
+  monthly: '9P947CB5W067',
+  yearly: '9N742Z07B04K'
+}
 
 export default function SubscriptionGate({ onClose, onPurchase }) {
+  const [selectedPlan, setSelectedPlan] = useState('monthly') // 'monthly' | 'yearly'
+
   async function handlePurchase() {
+    const storeId = STORE_IDS[selectedPlan]
     // In a packaged MSIX app this opens the native Windows Store purchase dialog
-    // In dev mode, we just simulate success for testing
+    // In dev mode, we simulate success for seamless testing
     if (window.electronAPI?.purchase) {
-      await window.electronAPI.purchase('streamsaverhd_pro_monthly')
+      const res = await window.electronAPI.purchase(storeId)
+      if (res?.success) {
+        onPurchase()
+      } else if (res?.reason) {
+        alert(`Store Purchase Status: ${res.reason}`)
+      } else {
+        onPurchase()
+      }
+    } else {
+      onPurchase()
     }
-    onPurchase()
   }
 
   return (
@@ -19,7 +35,7 @@ export default function SubscriptionGate({ onClose, onPurchase }) {
         {/* Header */}
         <div className="gate-header">
           <div className="gate-crown">⚡</div>
-          <h2 className="gate-title">Unlock StreamSaver HD Pro</h2>
+          <h2 className="gate-title">Unlock YoTube Video Downloader Pro</h2>
           <p className="gate-sub">Get unlimited access to all features</p>
         </div>
 
@@ -35,12 +51,20 @@ export default function SubscriptionGate({ onClose, onPurchase }) {
 
         {/* Pricing */}
         <div className="gate-pricing">
-          <div className="price-card highlighted">
+          <div
+            className={`price-card ${selectedPlan === 'monthly' ? 'highlighted' : ''}`}
+            onClick={() => setSelectedPlan('monthly')}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="price-badge">Most Popular</div>
             <div className="price-plan">Monthly</div>
             <div className="price-amount">₹99<span>/mo</span></div>
           </div>
-          <div className="price-card">
+          <div
+            className={`price-card ${selectedPlan === 'yearly' ? 'highlighted' : ''}`}
+            onClick={() => setSelectedPlan('yearly')}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="price-plan">Yearly</div>
             <div className="price-amount">₹499<span>/yr</span></div>
             <div className="price-save">Save 58%</div>
@@ -49,7 +73,7 @@ export default function SubscriptionGate({ onClose, onPurchase }) {
 
         {/* CTA */}
         <button className="btn-subscribe" onClick={handlePurchase}>
-          ⚡ Subscribe via Microsoft Store
+          ⚡ Subscribe ({selectedPlan === 'monthly' ? 'Monthly' : 'Yearly'}) via Microsoft Store
         </button>
         <p className="gate-note">
           Secure payment via Microsoft Store · Cancel anytime · Billed in INR

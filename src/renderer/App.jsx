@@ -267,7 +267,7 @@ export default function App() {
         <aside className="sidebar">
           <div className="logo-mark">
             <span className="brand-badge-large">↓</span>
-            <span className="logo-text">StreamSaver <strong>HD</strong></span>
+            <span className="logo-text">YoTube Video <strong>Downloader</strong></span>
           </div>
 
           <nav className="nav-links">
@@ -347,7 +347,7 @@ export default function App() {
                 <div className="done-card">
                   <div className="done-icon">✓</div>
                   <h2>Download Complete!</h2>
-                  <p>Saved to your <strong>{downloadsFolder || 'Downloads / StreamSaver HD'}</strong> folder.</p>
+                  <p>Saved to your <strong>{downloadsFolder || 'Downloads / YoTube Video Downloader'}</strong> folder.</p>
                   <div className="done-actions">
                     <button className="btn-primary" onClick={handleReset}>
                       Download Another

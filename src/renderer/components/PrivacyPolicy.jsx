@@ -1,6 +1,15 @@
-import React from 'react'
+// ── Google Form Feedback Link ──
+export const GOOGLE_FORM_FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfdwuzZKvknENWpzBeyQlh1j4pgLPU90p6u1pfZTNvbYZDzUg/viewform'
 
 export default function PrivacyPolicy({ onClose }) {
+  function handleOpenFeedback() {
+    if (window.electronAPI?.openExternal) {
+      window.electronAPI.openExternal(GOOGLE_FORM_FEEDBACK_URL)
+    } else {
+      window.open(GOOGLE_FORM_FEEDBACK_URL, '_blank')
+    }
+  }
+
   return (
     <div className="privacy-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="privacy-modal">
@@ -15,7 +24,7 @@ export default function PrivacyPolicy({ onClose }) {
         <div className="privacy-body">
           <section className="privacy-section">
             <h3>📋 Information We Collect</h3>
-            <p>StreamSaver HD operates entirely on your device. We do <strong>not</strong> collect, store, or transmit any personal data, browsing history, or download activity to external servers.</p>
+            <p>YoTube Video Downloader operates entirely on your device. We do <strong>not</strong> collect, store, or transmit any personal data, browsing history, or download activity to external servers.</p>
           </section>
 
           <section className="privacy-section">
@@ -38,9 +47,29 @@ export default function PrivacyPolicy({ onClose }) {
             <p>Download history and app preferences are stored <strong>locally</strong> on your device using browser localStorage. This data never leaves your computer.</p>
           </section>
 
+          <section className="privacy-section feedback-section">
+            <h3>💬 Feedback & Support Form</h3>
+            <p>Have questions, suggestions, or issues? Fill out our official Google Form to send us direct feedback.</p>
+            <button className="btn-privacy-feedback" onClick={handleOpenFeedback} style={{
+              marginTop: '10px',
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+              color: '#ffffff',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              📋 Submit Feedback via Google Form
+            </button>
+          </section>
+
           <section className="privacy-section">
             <h3>📬 Contact</h3>
-            <p>If you have questions about this privacy policy, please reach out to us through the Microsoft Store listing.</p>
+            <p>If you have questions about this privacy policy, please reach out to us through our feedback form or the Microsoft Store listing.</p>
           </section>
         </div>
 
